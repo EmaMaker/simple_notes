@@ -133,6 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
             keys.forEach((element) {
               element.currentState?.deleteFileFromSelect();
             });
+            exitSelectMode();
             break;
           case "Cancel":
             exitSelectMode();
@@ -156,7 +157,7 @@ class _MyHomePageState extends State<MyHomePage> {
       onChanged: (String? newValue) {
         switch (newValue) {
           case "Select":
-            enterSelectMode();
+            if(tiles.isNotEmpty) enterSelectMode();
             break;
           case "Settings":
             Navigator.pushReplacement(
@@ -165,7 +166,7 @@ class _MyHomePageState extends State<MyHomePage> {
         setState(() {});
       },
       underline: Container(color: Colors.transparent),
-      items: <String>['Select', 'Settings']
+      items: <String>['Settings', 'Select']
           .map<DropdownMenuItem<String>>((String value) {
         return DropdownMenuItem<String>(
           value: value,
