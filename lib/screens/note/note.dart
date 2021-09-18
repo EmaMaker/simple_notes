@@ -46,7 +46,7 @@ class _NewNoteState extends State<NewNote> {
     return new WillPopScope(
         child: Scaffold(
             appBar: AppBar(
-              toolbarHeight: 55,
+              toolbarHeight: 50,
               title: InkWell(
                 child: Text("$_title"),
               ),

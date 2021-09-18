@@ -18,7 +18,7 @@ class _SettingsState extends State<Settings> {
     return WillPopScope(
         child: Scaffold(
           appBar: AppBar(
-            toolbarHeight: 55,
+            toolbarHeight: 50,
             title: InkWell(
               child: Text("Settings"),
             ),
