@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:notes_app/components/storage.dart';
 import 'package:notes_app/screens/home/components/MyListTile.dart';
-import 'package:notes_app/screens/note/note.dart';
 import 'package:notes_app/screens/settings/settings.dart';
 
-import 'package:path/path.dart';
 import 'dart:io';
 
 class MyHomePage extends StatefulWidget {
@@ -125,17 +123,16 @@ class _MyHomePageState extends State<MyHomePage> {
     enterSelectMode();
   }
 
-
-
   /* DROP DOWN MENUS*/
-
   DropdownButton btnAppBarMoreSelect() {
     return DropdownButton<String>(
       icon: const Icon(Icons.more_vert, color: Colors.white),
       onChanged: (String? newValue) {
         switch (newValue) {
           case "Delete":
-          keys.forEach((element) { element.currentState?.deleteFileFromSelect(); });
+            keys.forEach((element) {
+              element.currentState?.deleteFileFromSelect();
+            });
             break;
           case "Cancel":
             exitSelectMode();
@@ -163,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
             break;
           case "Settings":
             Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (context) => Settings()));
+                context, MaterialPageRoute(builder: (context) => Settings(storage: widget.storage,)));
         }
         setState(() {});
       },

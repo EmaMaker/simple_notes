@@ -39,8 +39,7 @@ class MyListTileState extends State<MyListTile> {
     debugPrint("Recreating cards");
 
     return widget.selectMode
-        ? Card(
-            child: CheckboxListTile(
+        ? CheckboxListTile(
                 title: Text(basename(widget.file.path)),
                 checkColor: Colors.white,
                 value: isChecked,
@@ -48,9 +47,8 @@ class MyListTileState extends State<MyListTile> {
                   setState(() {
                     isChecked = widget.selectMode && value!;
                   });
-                }))
-        : Card(
-            child: ListTile(
+                })
+        : ListTile(
             title: Text(
               basename(widget.file.path),
               style: _biggerFont,
@@ -61,7 +59,7 @@ class MyListTileState extends State<MyListTile> {
             // onTap: _handleNote,
             subtitle: _subtitle(widget.file),
             trailing: btnListTileMore(context, widget.file),
-          ));
+          );
   }
 
   DropdownButton btnListTileMore(BuildContext context, File f) {
