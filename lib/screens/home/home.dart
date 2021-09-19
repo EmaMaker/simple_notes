@@ -15,10 +15,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final List<GlobalKey<MyListTileState>> keys = [];
-
   List<File> _allFilesNames = [];
-  late Iterable<MyListTile> tiles;
+  List<String> _selected = [];
 
   @override
   void initState() {
@@ -82,20 +80,21 @@ class _MyHomePageState extends State<MyHomePage> {
   bool selectMode = false;
 
   Widget _buildList(BuildContext context) {
-    keys.clear();
+    print(_selected);
 
-    tiles = _allFilesNames.map(
-      (File f) {
-        GlobalKey<MyListTileState> key = GlobalKey();
-        keys.add(key);
-
+    final tiles = _allFilesNames.map(
+      (
+        File f,
+      ) {
         return new MyListTile(
-          file: f,
-          selectMode: selectMode,
-          storage: widget.storage,
-          function: updateChildren,
-          key: key,
-        );
+            file: f,
+            selectMode: selectMode,
+            storage: widget.storage,
+            selectFunction: enterSelectMode,
+            updateFunction: updateChildren,
+            toggleFunction: toggleFile,
+            deleteFunction: _deleteFile,
+            isChecked: _selected.contains(f.path));
       },
     );
     final divided = tiles.isNotEmpty
@@ -115,12 +114,32 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void exitSelectMode() {
     setState(() {
+      _selected.clear();
       selectMode = false;
     });
   }
 
   void updateChildren() {
-    enterSelectMode();
+    setState(() {});
+  }
+
+  void toggleFile(File f, bool b) {
+      if (_selected.contains(f.path))
+        _selected.remove(f.path);
+      else
+        _selected.add(f.path);
+    setState(() {
+    });
+  }
+
+  void _deleteFile(File f) {
+    setState(() {
+      _selected.clear();
+      try {
+        f.deleteSync();
+      } catch (e) {}
+    });
+    exitSelectMode();
   }
 
   /* DROP DOWN MENUS*/
@@ -130,19 +149,47 @@ class _MyHomePageState extends State<MyHomePage> {
       onChanged: (String? newValue) {
         switch (newValue) {
           case "Delete":
-            keys.forEach((element) {
-              element.currentState?.deleteFileFromSelect();
+            _selected.forEach((element) {
+              File(element).deleteSync();
             });
+            _selected.clear();
+
             exitSelectMode();
             break;
           case "Cancel":
             exitSelectMode();
+            break;
+          case "Select All":
+            _selected.clear();
+            _allFilesNames.forEach((element) {
+              _selected.add(element.path);
+            });
+            break;
+          case "Deselect All":
+            _selected.clear();
+            break;
+          case "Toggle Selected":
+            List<String> newSelected = [];
+
+            _allFilesNames.forEach((element) {
+              if (!(_selected.contains(element.path))) newSelected.add(element.path);
+            });
+            print("new $newSelected");
+            _selected = newSelected;
+
+            // keys.forEach((element) {element.currentState?.isChecked = !(element.currentState?.isChecked) ;});
+            break;
         }
         setState(() {});
       },
       underline: Container(color: Colors.transparent),
-      items: <String>['Delete', 'Cancel']
-          .map<DropdownMenuItem<String>>((String value) {
+      items: <String>[
+        "Delete",
+        "Select All",
+        "Deselect All",
+        "Toggle Selected",
+        "Cancel",
+      ].map<DropdownMenuItem<String>>((String value) {
         return DropdownMenuItem<String>(
           value: value,
           child: Text(value),
@@ -157,11 +204,15 @@ class _MyHomePageState extends State<MyHomePage> {
       onChanged: (String? newValue) {
         switch (newValue) {
           case "Select":
-            if(tiles.isNotEmpty) enterSelectMode();
+            if (_allFilesNames.isNotEmpty) enterSelectMode();
             break;
           case "Settings":
             Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (context) => Settings(storage: widget.storage,)));
+                context,
+                MaterialPageRoute(
+                    builder: (context) => Settings(
+                          storage: widget.storage,
+                        )));
         }
         setState(() {});
       },

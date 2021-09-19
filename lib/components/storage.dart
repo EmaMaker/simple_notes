@@ -24,7 +24,7 @@ class CounterStorage {
       final directory = await localDir();
       await directory.list().forEach((element) {
         files.add(File(element.path));
-        debugPrint("debugPrinting $element");
+        // debugPrint("debugPrinting $element");
       });
 
       return files;

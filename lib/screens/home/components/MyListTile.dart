@@ -10,13 +10,21 @@ class MyListTile extends StatefulWidget {
       {Key? key,
       required this.file,
       required this.storage,
-      required this.function,
-      required this.selectMode})
+      required this.updateFunction,
+      required this.deleteFunction,
+      required this.toggleFunction,
+      required this.selectFunction,
+      required this.selectMode,
+      required this.isChecked})
       : super(key: key);
   final File file;
   final CounterStorage storage;
-  final Function function;
+  final Function updateFunction;
+  final Function toggleFunction;
+  final Function deleteFunction;
+  final Function selectFunction;
   final bool selectMode;
+  bool isChecked;
 
   @override
   MyListTileState createState() => MyListTileState();
@@ -26,8 +34,6 @@ class MyListTileState extends State<MyListTile> {
   final _biggerFont = const TextStyle(fontSize: 18);
   late TextEditingController _controller;
 
-  bool isChecked = false;
-
   @override
   void initState() {
     super.initState();
@@ -36,18 +42,18 @@ class MyListTileState extends State<MyListTile> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("Recreating cards");
+    print("${widget.isChecked} / ${widget.file}");
 
     return widget.selectMode
         ? CheckboxListTile(
-                title: Text(basename(widget.file.path)),
-                checkColor: Colors.white,
-                value: isChecked,
-                onChanged: (bool? value) {
-                  setState(() {
-                    isChecked = widget.selectMode && value!;
-                  });
-                })
+            title: Text(basename(widget.file.path)),
+            checkColor: Colors.white,
+            value: widget.isChecked,
+            onChanged: (bool? value) {
+              setState(() {
+                widget.toggleFunction(widget.file, widget.isChecked);
+              });
+            })
         : ListTile(
             title: Text(
               basename(widget.file.path),
@@ -55,7 +61,10 @@ class MyListTileState extends State<MyListTile> {
             ),
             onTap: () =>
                 widget.storage.openNote(context, basename(widget.file.path)),
-            onLongPress: () => widget.function,
+            onLongPress: () {
+              widget.toggleFunction(widget.file, true);
+              widget.selectFunction();
+            },
             // onTap: _handleNote,
             subtitle: _subtitle(widget.file),
             trailing: btnListTileMore(context, widget.file),
@@ -108,8 +117,7 @@ class MyListTileState extends State<MyListTile> {
                     // Return to previous screen
                     Navigator.pop(context);
                     _controller.text = "";
-                    setState(() {});
-                    widget.function();
+                    widget.updateFunction();
 
                     // Remove the box
                   },
@@ -119,8 +127,7 @@ class MyListTileState extends State<MyListTile> {
                     Navigator.pop(context);
                     widget.storage.renameNote(
                         basename(widget.file.path), _controller.text);
-                    setState(() {});
-                    widget.function();
+                    widget.deleteFunction(widget.file);
                   },
                   child: Text('Yes')),
             ],
@@ -145,16 +152,15 @@ class MyListTileState extends State<MyListTile> {
                     Navigator.pop(context);
                     _controller.text = "";
                     setState(() {});
-                    widget.function();
+                    widget.updateFunction();
                   },
                   child: Text('Cancel')),
               TextButton(
                   onPressed: () {
-                    deleteFile();
                     Navigator.pop(context);
                     //Return to previous screen
                     setState(() {});
-                    widget.function();
+                    widget.deleteFunction(widget.file);
                   },
                   child: Text('Ok')),
             ],
@@ -184,13 +190,5 @@ class MyListTileState extends State<MyListTile> {
       return Colors.blue;
     }
     return Colors.red;
-  }
-
-  void deleteFileFromSelect() {
-    if (isChecked) deleteFile();
-  }
-
-  void deleteFile() {
-    widget.file.deleteSync();
   }
 }
