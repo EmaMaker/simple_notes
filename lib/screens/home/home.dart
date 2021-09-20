@@ -79,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
               widget.storage.openNote(context, "");
             },
             tooltip: 'Take a new note',
-            child: Icon(Icons.add),
+            child: Icon(Icons.edit),
           ),
         ),
         onWillPop: () async {
@@ -94,7 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void sortFiles() {
     if (_sortBy == "Name") {
       _allFilesNames.sort((a, b) {
-        return a.path.compareTo(b.path);
+        return a.path.toLowerCase().compareTo(b.path.toLowerCase());
       });
     } else if (_sortBy == "Last Modified") {
 
