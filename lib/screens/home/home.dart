@@ -24,7 +24,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    getSortBy();
   }
 
   void getSortBy() async {
@@ -36,6 +35,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    getSortBy();
+
     return new WillPopScope(
         child: Scaffold(
           appBar: AppBar(
