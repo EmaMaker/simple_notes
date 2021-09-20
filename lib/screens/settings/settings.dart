@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:notes_app/components/storage.dart';
 import 'package:notes_app/screens/home/home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:adaptive_theme/adaptive_theme.dart';
 
 class Settings extends StatefulWidget {
   const Settings({Key? key, required this.storage}) : super(key: key);
@@ -135,11 +136,26 @@ class _SettingsState extends State<Settings> {
         });
   }
 
-  void _setTheme(dynamic newTheme) async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setString("theme", _theme);
+  void _setTheme(dynamic newTheme) {
+    // final prefs = await SharedPreferences.getInstance();
+
+    // prefs.setString("theme", _theme);
     setState(() {
       _theme = newTheme;
+      switch (_theme) {
+        case "Dark":
+          // sets theme mode to dark
+          AdaptiveTheme.of(context).setDark();
+          break;
+        case "Light":
+          // sets theme mode to light
+          AdaptiveTheme.of(context).setLight();
+          break;
+        case "Follow System":
+          // sets theme mode to system default
+          AdaptiveTheme.of(context).setSystem();
+          break;
+      }
       Navigator.of(context).pop();
     });
   }

@@ -79,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
               widget.storage.openNote(context, "");
             },
             tooltip: 'Take a new note',
-            child: Icon(Icons.note_alt_sharp),
+            child: Icon(Icons.add),
           ),
         ),
         onWillPop: () async {
@@ -168,7 +168,7 @@ class _MyHomePageState extends State<MyHomePage> {
   /* DROP DOWN MENUS*/
   DropdownButton btnAppBarMoreSelect() {
     return DropdownButton<String>(
-      icon: const Icon(Icons.more_vert, color: Colors.white),
+      icon: const Icon(Icons.more_vert),
       onChanged: (String? newValue) {
         switch (newValue) {
           case "Delete":
@@ -224,7 +224,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   DropdownButton btnAppBarMoreNoSelect(BuildContext context) {
     return DropdownButton<String>(
-      icon: const Icon(Icons.more_vert, color: Colors.white),
+      icon: const Icon(Icons.more_vert),
       onChanged: (String? newValue) {
         switch (newValue) {
           case "Select":
