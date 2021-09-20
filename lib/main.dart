@@ -1,31 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:notes_app/screens/home/home.dart';
 import 'package:notes_app/components/storage.dart';
+import 'package:adaptive_theme/adaptive_theme.dart';
 
-void main() {
-  runApp(MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final savedThemeMode = await AdaptiveTheme.getThemeMode();
+  runApp(MyApp(savedThemeMode: savedThemeMode));
 }
 
 class MyApp extends StatelessWidget {
-  
+  const MyApp({ Key? key, required this.savedThemeMode }) : super(key: key);
+
+  final savedThemeMode;
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Notes App',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
+    return AdaptiveTheme(
+      light: ThemeData(
+        brightness: Brightness.light,
+        primaryColor: Colors.white,
+        accentColor: Colors.black,
       ),
-      home: MyHomePage(storage: CounterStorage()),
+      dark: ThemeData(
+        brightness: Brightness.dark,
+        primarySwatch: Colors.red,
+        accentColor: Colors.amber,
+      ),
+      initial: savedThemeMode ?? AdaptiveThemeMode.system,
+      builder: (theme, darkTheme) => MaterialApp(
+        title: 'Simple Notes',
+        theme: theme,
+        darkTheme: darkTheme,
+        home: MyHomePage(storage: CounterStorage(),),
+      ),
     );
   }
 }
