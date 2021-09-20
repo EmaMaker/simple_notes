@@ -1,8 +1,7 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:notes_app/components/storage.dart';
 import 'package:notes_app/screens/home/home.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Settings extends StatefulWidget {
   const Settings({Key? key, required this.storage}) : super(key: key);
@@ -13,6 +12,31 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
+  @override
+  void initState() {
+    getTheme();
+    getSortBy();
+
+    super.initState();
+  }
+
+  String _theme = "";
+  String _sortBy = "";
+
+  void getTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _theme = prefs.getString("theme") ?? "Follow System";
+    });
+  }
+
+  void getSortBy() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _sortBy = prefs.getString("sortBy") ?? "Name";
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -69,10 +93,7 @@ class _SettingsState extends State<Settings> {
             builder: (context) => MyHomePage(storage: widget.storage)));
   }
 
-  String _theme = "";
-  String _sortBy = "";
-
-  void _sortByDialog(BuildContext context){
+  void _sortByDialog(BuildContext context) {
     showDialog(
         context: context,
         builder: (BuildContext ctx) {
@@ -80,7 +101,8 @@ class _SettingsState extends State<Settings> {
             title: const Text('Choose theme'),
             children: <Widget>[
               _radioListTile("Name", "Name", _sortBy, _setSortBy),
-              _radioListTile("Last Modified", "Last Modified", _sortBy, _setSortBy),
+              _radioListTile(
+                  "Last Modified", "Last Modified", _sortBy, _setSortBy),
             ],
           );
         });
@@ -93,7 +115,8 @@ class _SettingsState extends State<Settings> {
           return SimpleDialog(
             title: const Text('Choose theme'),
             children: <Widget>[
-              _radioListTile("Follow System", "Follow System", _theme, _setTheme),
+              _radioListTile(
+                  "Follow System", "Follow System", _theme, _setTheme),
               _radioListTile("Dark", "Dark", _theme, _setTheme),
               _radioListTile("Light", "Light", _theme, _setTheme),
             ],
@@ -102,11 +125,7 @@ class _SettingsState extends State<Settings> {
   }
 
   RadioListTile _radioListTile(
-    String title,
-    String value,
-    String groupValue,
-    Function(dynamic) f
-  ) {
+      String title, String value, String groupValue, Function(dynamic) f) {
     return new RadioListTile(
         title: Text(title),
         value: value,
@@ -116,16 +135,20 @@ class _SettingsState extends State<Settings> {
         });
   }
 
-  void _setTheme(dynamic newTheme) {
+  void _setTheme(dynamic newTheme) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString("theme", _theme);
     setState(() {
       _theme = newTheme;
       Navigator.of(context).pop();
     });
   }
 
-  void _setSortBy(dynamic newTheme) {
+  void _setSortBy(dynamic newSortby) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString("sortBy", newSortby);
     setState(() {
-      _sortBy = newTheme;
+      _sortBy = newSortby;
       Navigator.of(context).pop();
     });
   }

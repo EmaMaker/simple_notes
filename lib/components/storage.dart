@@ -46,7 +46,6 @@ class CounterStorage {
   }
 
   Future<String> getNote(String name) async {
-    //TODO: what if a note with this name already exists?
     final dir = (await localDir()).path;
 
     File file = File('$dir/$name');
@@ -71,9 +70,9 @@ class CounterStorage {
     await f.delete();
   }
 
-  void deleteNote(String note_name) async {
+  void deleteNote(String noteName) async {
     final dir = await _localPath();
-    await File('$dir/$note_name').delete();
+    await File('$dir/$noteName').delete();
   }
 
   void renameNote(String oldName, String newName) async {

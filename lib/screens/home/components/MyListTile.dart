@@ -42,7 +42,7 @@ class MyListTileState extends State<MyListTile> {
 
   @override
   Widget build(BuildContext context) {
-    print("${widget.isChecked} / ${widget.file}");
+    // print("${widget.isChecked} / ${widget.file}");
 
     return widget.selectMode
         ? CheckboxListTile(
@@ -125,9 +125,10 @@ class MyListTileState extends State<MyListTile> {
               TextButton(
                   onPressed: () {
                     Navigator.pop(context);
+                    widget.toggleFunction(widget.file, false);
                     widget.storage.renameNote(
                         basename(widget.file.path), _controller.text);
-                    widget.deleteFunction(widget.file);
+                    _controller.text = "";
                   },
                   child: Text('Yes')),
             ],
@@ -177,7 +178,7 @@ class MyListTileState extends State<MyListTile> {
   }
 
   String _lastEdited(DateTime now) {
-    return "Last edited: ${now.year.toString()}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
+    return "Last edited: ${now.year.toString()}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} at ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
   }
 
   Color getColor(Set<MaterialState> states) {
