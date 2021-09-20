@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:notes_app/components/storage.dart';
 import 'package:notes_app/screens/home/components/MyListTile.dart';
 import 'package:notes_app/screens/settings/settings.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'dart:io';
 
@@ -18,13 +19,24 @@ class _MyHomePageState extends State<MyHomePage> {
   List<File> _allFilesNames = [];
   List<String> _selected = [];
 
+  String _sortBy = "";
+
   @override
   void initState() {
     super.initState();
   }
 
+  void getSortBy() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _sortBy = prefs.getString("sortBy") ?? "Name";
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    getSortBy();
+
     return new WillPopScope(
         child: Scaffold(
           appBar: AppBar(
@@ -79,9 +91,21 @@ class _MyHomePageState extends State<MyHomePage> {
 
   bool selectMode = false;
 
-  Widget _buildList(BuildContext context) {
-    print(_selected);
+  void sortFiles() {
+    if (_sortBy == "Name") {
+      _allFilesNames.sort((a, b) {
+        return a.path.compareTo(b.path);
+      });
+    } else if (_sortBy == "Last Modified") {
 
+      _allFilesNames.sort((a, b) {
+        return b.lastModifiedSync().compareTo(a.lastModifiedSync());
+      });
+    }
+  }
+
+  Widget _buildList(BuildContext context) {
+    sortFiles();
     final tiles = _allFilesNames.map(
       (
         File f,
@@ -124,12 +148,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void toggleFile(File f, bool b) {
-      if (_selected.contains(f.path))
-        _selected.remove(f.path);
-      else
-        _selected.add(f.path);
-    setState(() {
-    });
+    if (_selected.contains(f.path))
+      _selected.remove(f.path);
+    else
+      _selected.add(f.path);
+    setState(() {});
   }
 
   void _deleteFile(File f) {
@@ -172,7 +195,8 @@ class _MyHomePageState extends State<MyHomePage> {
             List<String> newSelected = [];
 
             _allFilesNames.forEach((element) {
-              if (!(_selected.contains(element.path))) newSelected.add(element.path);
+              if (!(_selected.contains(element.path)))
+                newSelected.add(element.path);
             });
             print("new $newSelected");
             _selected = newSelected;

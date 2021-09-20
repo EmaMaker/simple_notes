@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:notes_app/screens/home/home.dart';
 import 'package:notes_app/components/storage.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   
