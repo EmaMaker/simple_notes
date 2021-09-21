@@ -25,9 +25,19 @@ class _SettingsState extends State<Settings> {
   String _sortBy = "";
 
   void getTheme() async {
-    final prefs = await SharedPreferences.getInstance();
+    final savedThemeMode = await AdaptiveTheme.getThemeMode();
     setState(() {
-      _theme = prefs.getString("theme") ?? "Follow System";
+      switch (savedThemeMode) {
+        case AdaptiveThemeMode.dark:
+          _theme = "Dark";
+          break;
+        case AdaptiveThemeMode.light:
+          _theme = "Light";
+          break;
+        default:
+          _theme = "Follow System";
+          break;
+      }
     });
   }
 
