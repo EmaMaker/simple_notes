@@ -110,13 +110,14 @@ class _NewNoteState extends State<NewNote> {
                     if (_controller.text != "") {
                       setState(() {
                         Navigator.pop(context);
-                        print(_title);
                         //Note: code repetition
-                        _changed = false;
-                        widget.storage.saveRename(_title, _controllerNote.text, _controller.text);
-                        _title = _controller.text;
+                        if(_title != _controller.text){
+                          _changed = false;
+                          widget.storage.saveRename(_title, _controllerNote.text, _controller.text);
+                          _title = _controller.text;
 
-                        _controller.text = "";
+                          _controller.text = "";
+                        }
                       });
                     }
                   },
