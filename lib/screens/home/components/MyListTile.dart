@@ -153,7 +153,6 @@ class MyListTileState extends State<MyListTile> {
                     // Remove the box
                     // Return to previous screen
                     Navigator.pop(context);
-                    _controller.text = "";
                     setState(() {});
                     widget.updateFunction();
                   },
