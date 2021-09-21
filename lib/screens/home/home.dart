@@ -97,7 +97,6 @@ class _MyHomePageState extends State<MyHomePage> {
         return a.path.toLowerCase().compareTo(b.path.toLowerCase());
       });
     } else if (_sortBy == "Last Modified") {
-
       _allFilesNames.sort((a, b) {
         return b.lastModifiedSync().compareTo(a.lastModifiedSync());
       });
@@ -172,12 +171,7 @@ class _MyHomePageState extends State<MyHomePage> {
       onChanged: (String? newValue) {
         switch (newValue) {
           case "Delete":
-            _selected.forEach((element) {
-              File(element).deleteSync();
-            });
-            _selected.clear();
-
-            exitSelectMode();
+            _deleteDialog(context);
             break;
           case "Cancel":
             exitSelectMode();
@@ -249,5 +243,41 @@ class _MyHomePageState extends State<MyHomePage> {
         );
       }).toList(),
     );
+  }
+
+  void _deleteDialog(BuildContext context) {
+    // debugdebugPrint("Clicked title");
+    showDialog(
+        context: context,
+        builder: (BuildContext ctx) {
+          return AlertDialog(
+            title: Text('Delete notes'),
+            content: Text(
+                "Are you sure you want to delete the selected notes? This action cannot be undone!"),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    // Remove the box
+                    // Return to previous screen
+                    Navigator.pop(context);
+                    setState(() {});
+                    updateChildren();
+                  },
+                  child: Text('Cancel')),
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    //Return to previous screen
+                    setState(() {});
+
+                    _selected.forEach((element) {
+                      File(element).deleteSync();
+                    });
+                    _selected.clear();
+                  },
+                  child: Text('Ok')),
+            ],
+          );
+        });
   }
 }
