@@ -82,6 +82,11 @@ class CounterStorage {
     f.rename('$dir/$newName');
   }
 
+  void saveRename(String oldName, String content, String newName) async {
+    await saveNote(oldName, content);
+    renameNote(oldName, newName);
+  }
+
 // Note: Name of the note/filepath. If "" create a new note
   void openNote(BuildContext context, String note) {
     Navigator.pushReplacement(
