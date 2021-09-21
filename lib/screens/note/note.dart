@@ -15,13 +15,14 @@ class NewNote extends StatefulWidget {
 class _NewNoteState extends State<NewNote> {
   bool _changed = false;
   String _title = "New Note";
-  late TextEditingController _controllerNote;
+  late TextEditingController _controllerNote, _controller;
 
   @override
   void initState() {
     super.initState();
 
     _controllerNote = TextEditingController();
+    _controller = TextEditingController();
 
     if (widget.note != "") {
       widget.storage.getNote(widget.note).then((String value) {
@@ -49,6 +50,7 @@ class _NewNoteState extends State<NewNote> {
               toolbarHeight: 50,
               title: InkWell(
                 child: Text("$_title"),
+                onTap: () => _changeTitleDialog(context),
               ),
               centerTitle: true,
               leading: new IconButton(
@@ -77,6 +79,50 @@ class _NewNoteState extends State<NewNote> {
         onWillPop: () async {
           _deleteDialog(context);
           return true;
+        });
+  }
+
+  void _changeTitleDialog(BuildContext context) {
+    // debugdebugPrint("Clicked title");
+    showDialog (
+        context: context,
+        builder: (BuildContext ctx) {
+          return AlertDialog(
+            title: Text('Rename note:'),
+            content: TextField(
+              controller: _controller,
+              maxLines: 1,
+              decoration: InputDecoration(
+                hintText: _title,
+              ),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    setState(() {
+                      Navigator.pop(context);
+                      _controller.text = "";
+                    });
+                  },
+                  child: Text('No')),
+              TextButton(
+                  onPressed: () {
+                    if (_controller.text != "") {
+                      setState(() {
+                        Navigator.pop(context);
+                        print(_title);
+                        //Note: code repetition
+                        _changed = false;
+                        widget.storage.saveRename(_title, _controllerNote.text, _controller.text);
+                        _title = _controller.text;
+
+                        _controller.text = "";
+                      });
+                    }
+                  },
+                  child: Text('Yes')),
+            ],
+          );
         });
   }
 
