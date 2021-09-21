@@ -124,11 +124,13 @@ class MyListTileState extends State<MyListTile> {
                   child: Text('No')),
               TextButton(
                   onPressed: () {
-                    Navigator.pop(context);
-                    widget.toggleFunction(widget.file, false);
-                    widget.storage.renameNote(
-                        basename(widget.file.path), _controller.text);
-                    _controller.text = "";
+                    if (_controller.text != "") {
+                      Navigator.pop(context);
+                      widget.toggleFunction(widget.file, false);
+                      widget.storage.renameNote(
+                          basename(widget.file.path), _controller.text);
+                      _controller.text = "";
+                    }
                   },
                   child: Text('Yes')),
             ],
