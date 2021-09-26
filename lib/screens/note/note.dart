@@ -43,6 +43,12 @@ class _NewNoteState extends State<NewNote> {
   }
 
   @override
+  void dispose() {
+    _controllerNote.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return new WillPopScope(
         child: Scaffold(
@@ -82,9 +88,11 @@ class _NewNoteState extends State<NewNote> {
         });
   }
 
+  /* --------------------------------------- DIALOGS ------------------------------------------- */
+  /* RENAME DIALOG */
   void _changeTitleDialog(BuildContext context) {
     // debugdebugPrint("Clicked title");
-    showDialog (
+    showDialog(
         context: context,
         builder: (BuildContext ctx) {
           return AlertDialog(
@@ -111,10 +119,8 @@ class _NewNoteState extends State<NewNote> {
                       setState(() {
                         Navigator.pop(context);
                         //Note: code repetition
-                        if(_title != _controller.text){
-                          _changed = false;
-                          widget.storage.saveRename(_title, _controllerNote.text, _controller.text);
-                          _title = _controller.text;
+                        if (_title != _controller.text) {
+                          _save(rename: true, newname: _controller.text);
 
                           _controller.text = "";
                         }
@@ -126,7 +132,9 @@ class _NewNoteState extends State<NewNote> {
           );
         });
   }
+  /* --------------------- */
 
+  /* DELETE DIALOG */
   void _deleteDialog(BuildContext context) {
     if (_changed)
       showDialog(
@@ -167,7 +175,9 @@ class _NewNoteState extends State<NewNote> {
     else
       _toPrevious();
   }
+  /* --------------------- */
 
+  /* --------------------------------------- UTILITY FUNCTIONS ------------------------------------------- */
   void _toPrevious() {
     Navigator.pushReplacement(
         context,
@@ -175,22 +185,20 @@ class _NewNoteState extends State<NewNote> {
             builder: (context) => MyHomePage(storage: widget.storage)));
   }
 
-  void _save() {
-    _changed = false;
-
-    widget.storage.saveNote(_title, _controllerNote.text);
-
-    setState(() {});
+  void _save({bool rename = false, String newname = ""}) {
+    setState(() {
+      _changed = false;
+      if (rename) {
+        widget.storage.saveRename(_title, _controllerNote.text, newname);
+        _title = newname;
+      } else
+        widget.storage.saveNote(_title, _controllerNote.text);
+    });
   }
 
   void _onChange(String s) {
-    _changed = true;
-    setState(() {});
-  }
-
-  @override
-  void dispose() {
-    _controllerNote.dispose();
-    super.dispose();
+    setState(() {
+      _changed = true;
+    });
   }
 }

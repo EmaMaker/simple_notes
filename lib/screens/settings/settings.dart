@@ -13,6 +13,9 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
+  String _theme = "";
+  String _sortBy = "";
+
   @override
   void initState() {
     getTheme();
@@ -21,31 +24,9 @@ class _SettingsState extends State<Settings> {
     super.initState();
   }
 
-  String _theme = "";
-  String _sortBy = "";
-
-  void getTheme() async {
-    final savedThemeMode = await AdaptiveTheme.getThemeMode();
-    setState(() {
-      switch (savedThemeMode) {
-        case AdaptiveThemeMode.dark:
-          _theme = "Dark";
-          break;
-        case AdaptiveThemeMode.light:
-          _theme = "Light";
-          break;
-        default:
-          _theme = "Follow System";
-          break;
-      }
-    });
-  }
-
-  void getSortBy() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _sortBy = prefs.getString("sortBy") ?? "Name";
-    });
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -97,42 +78,12 @@ class _SettingsState extends State<Settings> {
     );
   }
 
+  /* --------------------------------------- UTLITY FUNCTIONS ------------------------------------------- */
   void _toPrevious() {
     Navigator.pushReplacement(
         context,
         MaterialPageRoute(
             builder: (context) => MyHomePage(storage: widget.storage)));
-  }
-
-  void _sortByDialog(BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (BuildContext ctx) {
-          return SimpleDialog(
-            title: const Text('Choose theme'),
-            children: <Widget>[
-              _radioListTile("Name", "Name", _sortBy, _setSortBy),
-              _radioListTile(
-                  "Last Modified", "Last Modified", _sortBy, _setSortBy),
-            ],
-          );
-        });
-  }
-
-  void _themeDialog(BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (BuildContext ctx) {
-          return SimpleDialog(
-            title: const Text('Choose theme'),
-            children: <Widget>[
-              _radioListTile(
-                  "Follow System", "Follow System", _theme, _setTheme),
-              _radioListTile("Dark", "Dark", _theme, _setTheme),
-              _radioListTile("Light", "Light", _theme, _setTheme),
-            ],
-          );
-        });
   }
 
   RadioListTile _radioListTile(
@@ -146,6 +97,32 @@ class _SettingsState extends State<Settings> {
         });
   }
 
+  /* --------------------------------------- GETTERS ------------------------------------------- */
+  void getTheme() async {
+    final savedThemeMode = await AdaptiveTheme.getThemeMode();
+    setState(() {
+      switch (savedThemeMode) {
+        case AdaptiveThemeMode.dark:
+          _theme = "Dark";
+          break;
+        case AdaptiveThemeMode.light:
+          _theme = "Light";
+          break;
+        default:
+          _theme = "Follow System";
+          break;
+      }
+    });
+  }
+
+  void getSortBy() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _sortBy = prefs.getString("sortBy") ?? "Name";
+    });
+  }
+
+  /* --------------------------------------- SETTERS ------------------------------------------- */
   void _setTheme(dynamic newTheme) {
     // final prefs = await SharedPreferences.getInstance();
 
@@ -179,6 +156,43 @@ class _SettingsState extends State<Settings> {
     });
   }
 
+  /* --------------------------------------- DIALOGS ------------------------------------------- */
+  /* SORT BY DIALOG */
+  void _sortByDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext ctx) {
+          return SimpleDialog(
+            title: const Text('Choose theme'),
+            children: <Widget>[
+              _radioListTile("Name", "Name", _sortBy, _setSortBy),
+              _radioListTile(
+                  "Last Modified", "Last Modified", _sortBy, _setSortBy),
+            ],
+          );
+        });
+  }
+  /* --------------------- */
+
+  /* THEME DIALOG */
+  void _themeDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext ctx) {
+          return SimpleDialog(
+            title: const Text('Choose theme'),
+            children: <Widget>[
+              _radioListTile(
+                  "Follow System", "Follow System", _theme, _setTheme),
+              _radioListTile("Dark", "Dark", _theme, _setTheme),
+              _radioListTile("Light", "Light", _theme, _setTheme),
+            ],
+          );
+        });
+  }
+  /* --------------------- */
+
+  /* ABOUT DIALOG */
   void _aboutDialog(BuildContext context) {
     showDialog(
         context: context,
@@ -190,10 +204,5 @@ class _SettingsState extends State<Settings> {
             applicationVersion: "v1.0",
           );
         });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }

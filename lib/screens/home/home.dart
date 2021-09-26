@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:notes_app/components/storage.dart';
-import 'package:notes_app/screens/home/components/MyListTile.dart';
-import 'package:notes_app/screens/settings/settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:notes_app/components/storage.dart';
+import 'package:notes_app/screens/settings/settings.dart';
 
+import 'package:path/path.dart';
 import 'dart:io';
 
 class MyHomePage extends StatefulWidget {
@@ -18,12 +18,15 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<File> _allFilesNames = [];
   List<String> _selected = [];
-
+  bool selectMode = false;
   String _sortBy = "";
+
+  late TextEditingController _controller;
 
   @override
   void initState() {
     super.initState();
+    _controller = TextEditingController();
   }
 
   void getSortBy() async {
@@ -44,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
             centerTitle: true,
             toolbarHeight: 50,
             actions: selectMode
-                ? [btnAppBarMoreSelect()]
+                ? [btnAppBarMoreSelect(context)]
                 : [btnAppBarMoreNoSelect(context)],
           ),
           body: FutureBuilder<List<File>>(
@@ -89,7 +92,46 @@ class _MyHomePageState extends State<MyHomePage> {
         });
   }
 
-  bool selectMode = false;
+  Widget _buildList(BuildContext context) {
+    sortFiles();
+    final tiles = _allFilesNames.map(
+      (
+        File file,
+      ) {
+        return selectMode
+            ? CheckboxListTile(
+                title: Text(basename(file.path)),
+                checkColor: Colors.white,
+                value: _selected.contains(file.path),
+                onChanged: (bool? value) {
+                  toggleFile(file);
+                })
+            : ListTile(
+                title: Text(
+                  basename(file.path),
+                  style: TextStyle(fontSize: 18),
+                ),
+                onTap: () =>
+                    widget.storage.openNote(context, basename(file.path)),
+                onLongPress: () {
+                  _selected.add(file.path);
+                  enterSelectMode();
+                },
+                subtitle: _subtitle(file),
+                trailing: btnListTileMore(context, file),
+              );
+      },
+    );
+    final divided = tiles.isNotEmpty
+        ? ListTile.divideTiles(context: context, tiles: tiles).toList()
+        : <Widget>[];
+    return ListView(
+      padding: const EdgeInsets.all(8),
+      children: divided,
+    );
+  }
+
+  /* --------------------------------------- UTILITY FUNCTIONS ------------------------------------------- */
 
   void sortFiles() {
     if (_sortBy == "Name") {
@@ -103,30 +145,16 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Widget _buildList(BuildContext context) {
-    sortFiles();
-    final tiles = _allFilesNames.map(
-      (
-        File f,
-      ) {
-        return new MyListTile(
-            file: f,
-            selectMode: selectMode,
-            storage: widget.storage,
-            selectFunction: enterSelectMode,
-            updateFunction: updateChildren,
-            toggleFunction: toggleFile,
-            deleteFunction: _deleteFile,
-            isChecked: _selected.contains(f.path));
-      },
-    );
-    final divided = tiles.isNotEmpty
-        ? ListTile.divideTiles(context: context, tiles: tiles).toList()
-        : <Widget>[];
-    return ListView(
-      padding: const EdgeInsets.all(8),
-      children: divided,
-    );
+  Widget _subtitle(File f) {
+    try {
+      return Text(_lastEdited(f.lastModifiedSync()));
+    } catch (e) {
+      return Text("");
+    }
+  }
+
+  String _lastEdited(DateTime now) {
+    return "Last edited: ${now.year.toString()}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} at ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
   }
 
   void enterSelectMode() {
@@ -142,16 +170,11 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void updateChildren() {
-    setState(() {});
-  }
-
-  void toggleFile(File f, bool b) {
-    if (_selected.contains(f.path))
-      _selected.remove(f.path);
+  void toggleFile(File file) {
+    if (_selected.contains(file.path))
+      _selected.remove(file.path);
     else
-      _selected.add(f.path);
-    setState(() {});
+      _selected.add(file.path);
   }
 
   void _deleteFile(File f) {
@@ -164,16 +187,17 @@ class _MyHomePageState extends State<MyHomePage> {
     exitSelectMode();
   }
 
-  /* DROP DOWN MENUS*/
-  DropdownButton btnAppBarMoreSelect() {
+  /* --------------------------------------- DROP DOWN MENUS ------------------------------------------- */
+  /* APPBAR MORE (SELECT)*/
+  DropdownButton btnAppBarMoreSelect(BuildContext context) {
     return DropdownButton<String>(
       icon: const Icon(Icons.more_vert),
       onChanged: (String? newValue) {
         switch (newValue) {
-          case "Delete":
-            _deleteDialog(context);
+          case "Delete Selected":
+            _deleteAllDialog(context);
             break;
-          case "Cancel":
+          case "Exit Select Mode":
             exitSelectMode();
             break;
           case "Select All":
@@ -202,11 +226,11 @@ class _MyHomePageState extends State<MyHomePage> {
       },
       underline: Container(color: Colors.transparent),
       items: <String>[
-        "Delete",
+        "Delete Selected",
         "Select All",
         "Deselect All",
         "Toggle Selected",
-        "Cancel",
+        "Exit Select Mode",
       ].map<DropdownMenuItem<String>>((String value) {
         return DropdownMenuItem<String>(
           value: value,
@@ -215,7 +239,9 @@ class _MyHomePageState extends State<MyHomePage> {
       }).toList(),
     );
   }
+  /* --------------------- */
 
+  /* APPBAR MORE (NO SELECT)*/
   DropdownButton btnAppBarMoreNoSelect(BuildContext context) {
     return DropdownButton<String>(
       icon: const Icon(Icons.more_vert),
@@ -245,7 +271,76 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void _deleteDialog(BuildContext context) {
+  /* TILE MORE */
+  DropdownButton btnListTileMore(BuildContext context, File f) {
+    return DropdownButton<String>(
+      icon: const Icon(Icons.more_vert_outlined),
+      onChanged: (String? newValue) {
+        switch (newValue) {
+          case "Delete":
+            _deleteSingleDialog(context, f);
+            break;
+          case "Rename":
+            _changeTitleDialog(context, f.path);
+            break;
+        }
+        setState(() {});
+      },
+      underline: Container(color: Colors.transparent),
+      items: <String>['Rename', 'Delete']
+          .map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(value),
+        );
+      }).toList(),
+    );
+  }
+  /* --------------------- */
+
+  /* --------------------------------------- DIALOGS ------------------------------------------- */
+  /* RENAME DIALOG */
+  void _changeTitleDialog(BuildContext context, String path) {
+    // debugdebugPrint("Clicked title");
+    showDialog(
+        context: context,
+        builder: (BuildContext ctx) {
+          return AlertDialog(
+            title: Text('Rename note:'),
+            content: TextField(
+              controller: _controller,
+              maxLines: 1,
+              decoration: InputDecoration(
+                hintText: basename(path),
+              ),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    // Return to previous screen
+                    Navigator.pop(context);
+                    _controller.text = "";
+                  },
+                  child: Text('No')),
+              TextButton(
+                  onPressed: () {
+                    if (_controller.text != "") {
+                      Navigator.pop(context);
+                      _selected.remove(path);
+                      widget.storage
+                          .renameNote(basename(path), _controller.text);
+                      _controller.text = "";
+                    }
+                  },
+                  child: Text('Yes')),
+            ],
+          );
+        });
+  }
+  /* --------------------- */
+
+  /* DELETE MULTIPLE DIALOG */
+  void _deleteAllDialog(BuildContext context) {
     // debugdebugPrint("Clicked title");
     showDialog(
         context: context,
@@ -261,7 +356,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     // Return to previous screen
                     Navigator.pop(context);
                     setState(() {});
-                    updateChildren();
                   },
                   child: Text('Cancel')),
               TextButton(
@@ -280,4 +374,37 @@ class _MyHomePageState extends State<MyHomePage> {
           );
         });
   }
+  /* --------------------- */
+
+  /* DELETE SINGLE DIALOG */
+  void _deleteSingleDialog(BuildContext context, File f) {
+    showDialog(
+        context: context,
+        builder: (BuildContext ctx) {
+          return AlertDialog(
+            title: Text('Delete note'),
+            content: Text(
+                "Are you sure you want to delete this note? This action cannot be undone!"),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    // Remove the box
+                    // Return to previous screen
+                    Navigator.pop(context);
+                    setState(() {});
+                  },
+                  child: Text('Cancel')),
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    //Return to previous screen
+                    setState(() {});
+                    _deleteFile(f);
+                  },
+                  child: Text('Ok')),
+            ],
+          );
+        });
+  }
+  /* --------------------- */
 }
